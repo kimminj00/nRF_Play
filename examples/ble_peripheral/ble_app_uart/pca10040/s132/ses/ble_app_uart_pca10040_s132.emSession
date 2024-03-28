@@ -1,0 +1,55 @@
+<!DOCTYPE CrossStudio_Session_File>
+<session>
+ <Bookmarks/>
+ <Breakpoints groups="Breakpoints" active_group="Breakpoints"/>
+ <ExecutionProfileWindow/>
+ <FrameBuffer/>
+ <Memory1/>
+ <Memory2/>
+ <Memory3/>
+ <Memory4/>
+ <Project>
+  <ProjectSessionItem path="ble_app_uart_pca10040_s132"/>
+  <ProjectSessionItem path="ble_app_uart_pca10040_s132;ble_app_uart_pca10040_s132"/>
+  <ProjectSessionItem path="ble_app_uart_pca10040_s132;ble_app_uart_pca10040_s132;Application"/>
+  <ProjectSessionItem path="ble_app_uart_pca10040_s132;ble_app_uart_pca10040_s132;nRF_BLE"/>
+  <ProjectSessionItem path="ble_app_uart_pca10040_s132;ble_app_uart_pca10040_s132;nRF_BLE_Services"/>
+  <ProjectSessionItem path="ble_app_uart_pca10040_s132;ble_app_uart_pca10040_s132;nRF_Libraries"/>
+ </Project>
+ <Register1/>
+ <Register2/>
+ <Register3/>
+ <Register4/>
+ <Threads>
+  <ThreadsWindow showLists=""/>
+ </Threads>
+ <TraceWindow>
+  <Trace enabled="Yes"/>
+ </TraceWindow>
+ <Watch1>
+  <Watches active="1" update="Never"/>
+ </Watch1>
+ <Watch2>
+  <Watches active="0" update="Never"/>
+ </Watch2>
+ <Watch3>
+  <Watches active="0" update="Never"/>
+ </Watch3>
+ <Watch4>
+  <Watches active="0" update="Never"/>
+ </Watch4>
+ <Files>
+  <SessionOpenFile windowGroup="DockEditLeft" x="0" y="394" useTextEdit="1" path="../../../main.c" left="0" selected="1" top="378" codecName="Default"/>
+  <SessionOpenFile windowGroup="DockEditLeft" x="0" y="94" useTextEdit="1" openedFrom="C:/Users/SJIT/Desktop/IET10N_Dev__git/examples/ble_peripheral/ble_app_uart/main.c" path="../../../../../../components/ble/nrf_ble_gatt/nrf_ble_gatt.h" left="0" top="94" codecName="Default"/>
+  <SessionOpenFile windowGroup="DockEditLeft" x="0" y="110" useTextEdit="1" openedFrom="C:/Users/SJIT/Desktop/IET10N_Dev__git/examples/ble_peripheral/ble_app_uart/main.c" path="../../../../../../components/libraries/log/nrf_log.h" left="0" top="94" codecName="Default"/>
+  <SessionOpenFile windowGroup="DockEditLeft" x="48" y="760" useTextEdit="1" openedFrom="C:/Users/SJIT/Desktop/IET10N_Dev__git/examples/ble_peripheral/ble_app_uart/main.c" path="../../../../../../components/ble/ble_advertising/ble_advertising.c" left="0" top="760" codecName="Default"/>
+  <SessionOpenFile windowGroup="DockEditLeft" x="8" y="74" useTextEdit="1" openedFrom="C:/IET10N_Dev__git/examples/ble_peripheral/ble_app_uart/main.c" path="../../../../../../components/ble/ble_advertising/ble_advertising.h" left="0" top="58" codecName="Default"/>
+  <SessionOpenFile windowGroup="DockEditLeft" x="96" y="760" useTextEdit="1" openedFrom="C:/IET10N_Dev__git/examples/ble_peripheral/ble_app_uart/main.c" path="../../../../../../components/softdevice/s132/headers/ble_gap.h" left="0" top="746" codecName="Default"/>
+  <SessionOpenFile windowGroup="DockEditLeft" x="12" y="565" useTextEdit="1" openedFrom="C:/IET10N_Dev__git/examples/ble_peripheral/ble_app_uart/main.c" path="C:/Users/SJIT/Desktop/IET10N_Dev__git/components/ble/ble_advertising/ble_advertising.c" left="0" top="565" codecName="Default"/>
+  <SessionOpenFile windowGroup="DockEditLeft" x="0" y="174" useTextEdit="1" openedFrom="C:/Users/SJIT/Desktop/IET10N_Dev__git/components/ble/ble_advertising/ble_advertising.c" path="C:/Users/SJIT/Desktop/IET10N_Dev__git/components/ble/ble_advertising/ble_advertising.h" left="0" top="156" codecName="Default"/>
+  <SessionOpenFile windowGroup="DockEditLeft" x="51" y="501" useTextEdit="1" openedFrom="C:/IET10N_Dev__git/components/ble/ble_advertising/ble_advertising.c" path="C:/Users/SJIT/Desktop/IET10N_Dev__git/components/ble/common/ble_advdata.c" left="0" top="501" codecName="Default"/>
+  <SessionOpenFile windowGroup="DockEditLeft" x="37" y="133" useTextEdit="1" openedFrom="C:/IET10N_Dev__git/components/ble/ble_advertising/ble_advertising.c" path="../../../../../../components/ble/common/ble_advdata.h" left="0" top="118" codecName="Default"/>
+  <SessionOpenFile windowGroup="DockEditLeft" x="73" y="81" useTextEdit="1" openedFrom="C:/IET10N_Dev__git/examples/ble_peripheral/ble_app_uart/main.c" path="../../../../../../components/softdevice/common/nrf_sdh_ble.h" left="0" top="74" codecName="Default"/>
+ </Files>
+ <EMStudioWindow activeProject="ble_app_uart_pca10040_s132" fileDialogDefaultFilter="*.c" autoConnectTarget="J-Link" buildConfiguration="Debug" sessionSettings="" debugSearchFileMap="" fileDialogInitialDirectory="" debugSearchPath="" autoConnectCapabilities="3199"/>
+</session>
