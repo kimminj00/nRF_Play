@@ -65,7 +65,6 @@
 #include "app_timer.h"
 #include "ble_nus.h"
 #include "app_uart.h"
-#include "ble_lbs.h"
 #include "app_util_platform.h"
 #include "bsp_btn_ble.h"
 #include "nrf_pwr_mgmt.h"
@@ -114,7 +113,6 @@
 #define APP_TIMER_PRESCALER             0
 
 BLE_NUS_DEF(m_nus, NRF_SDH_BLE_TOTAL_LINK_COUNT);                                   /**< BLE NUS service instance. */
-//BLE_LBS_DEF(m_lbs); 
 NRF_BLE_GATT_DEF(m_gatt);                                                           /**< GATT module instance. */
 NRF_BLE_QWR_DEF(m_qwr);                                                             /**< Context for the Queued Write module.*/
 BLE_ADVERTISING_DEF(m_advertising);                                                 /**< Advertising module instance. */
@@ -165,11 +163,10 @@ static uint16_t   m_ble_nus_max_data_len = BLE_GATT_ATT_MTU_DEFAULT - 3;        
 
 #define CDEV_LED_ACTIVE_STATE    0          
 
-static void button_timer_handler(void* p_context);
-
 static int button_flag_get(int pin_no);
 
 static void bsp_long_press_handler(void* p_context);
+static void check_button_state(uint32_t button_index);
 
 static uint8_t m_beacon_info[APP_BEACON_INFO_LENGTH] =                    /**< Information advertised by the Beacon. */
 {
@@ -185,8 +182,7 @@ static uint8_t m_beacon_info[APP_BEACON_INFO_LENGTH] =                    /**< I
 };
 
 static ble_gap_adv_params_t m_adv_params;                                  /**< Parameters to be passed to the stack when starting advertising. */
-static uint8_t              m_adv_handle = BLE_GAP_ADV_SET_HANDLE_NOT_SET; /**< Advertising handle used to identify an advertising set. */
-static uint8_t              m_enc_advdata[BLE_GAP_ADV_SET_DATA_SIZE_MAX];  /**< Buffer for storing an encoded advertising set. */
+
 
 
 /**@brief Function for assert macro callback.
@@ -223,16 +219,6 @@ static void timers_init(void)
 {
     ret_code_t err_code = app_timer_init();
     APP_ERROR_CHECK(err_code);
-    // err_code = app_timer_create(&button_timer_id,
-    //                              APP_TIMER_MODE_REPEATED,
-    //                              button_timer_handler);
-    // APP_ERROR_CHECK(err_code);
-
-    // err_code = app_timer_start(button_timer_id,APP_TIMER_TICKS(100),NULL);
-    // if (err_code != NRF_SUCCESS)
-    // {
-    //     NRF_LOG_WARNING("Failed to start app_timer (err:%d)", err_code);
-    // }
 
     err_code = app_timer_create(&bsp_long_press_id,
                                  APP_TIMER_MODE_REPEATED,
@@ -323,10 +309,6 @@ static void nus_data_handler(ble_nus_evt_t * p_evt)
 }
 /**@snippet [Handling the data received over BLE] */
 
-// static void led_write_handler(uint16_t conn_handle, ble_lbs_t * p_lbs, uint8_t leds_state)
-// {
-
-// }
 
 
 /**@brief Function for initializing services that will be used by the application.
@@ -335,7 +317,6 @@ static void services_init(void)
 {
     ret_code_t         err_code;
     ble_nus_init_t     nus_init;
- //   ble_lbs_init_t     lbs_init;
     nrf_ble_qwr_init_t qwr_init = {0};
 
     // Initialize Queued Write Module.
@@ -346,16 +327,13 @@ static void services_init(void)
 
     // Initialize NUS.
     memset(&nus_init, 0, sizeof(nus_init));
-   // memset(&lbs_init, 0, sizeof(lbs_init));
+
 
     nus_init.data_handler = nus_data_handler;
 
     err_code = ble_nus_init(&m_nus, &nus_init);
     APP_ERROR_CHECK(err_code);
 
-    // lbs_init.led_write_handler = led_write_handler;
-    // err_code = ble_lbs_init(&m_lbs, &lbs_init);
-    // APP_ERROR_CHECK(err_code);
 
 }
 
@@ -446,13 +424,13 @@ static void on_adv_evt(ble_adv_evt_t ble_adv_evt)
 
     switch (ble_adv_evt)
     {
-        case BLE_ADV_EVT_FAST:
-            err_code = bsp_indication_set(BSP_INDICATE_ADVERTISING);
-            APP_ERROR_CHECK(err_code);
-            break;
-        case BLE_ADV_EVT_IDLE:
-            sleep_mode_enter();
-            break;
+        // case BLE_ADV_EVT_FAST:
+        //     err_code = bsp_indication_set(BSP_INDICATE_ADVERTISING);
+        //     APP_ERROR_CHECK(err_code);
+        //     break;
+        // case BLE_ADV_EVT_IDLE:
+        //     sleep_mode_enter();
+        //     break;
         default:
             break;
     }
@@ -472,8 +450,8 @@ static void ble_evt_handler(ble_evt_t const * p_ble_evt, void * p_context)
     {
         case BLE_GAP_EVT_CONNECTED:
             NRF_LOG_INFO("Connected");
-            err_code = bsp_indication_set(BSP_INDICATE_CONNECTED);
-            APP_ERROR_CHECK(err_code);
+            //err_code = bsp_indication_set(BSP_INDICATE_CONNECTED);
+            //APP_ERROR_CHECK(err_code);
             m_conn_handle = p_ble_evt->evt.gap_evt.conn_handle;
             err_code = nrf_ble_qwr_conn_handle_assign(&m_qwr, m_conn_handle);
             APP_ERROR_CHECK(err_code);
@@ -594,39 +572,43 @@ typedef enum _led_status{
     led_off,
 }led_status;
 
+typedef enum _bsp_led_pin{
+    bsp_led_1 =0,
+    bsp_led_2,
+    bsp_led_3,
+    bsp_led_4
+}BSP_LED;
+
+typedef enum _bsp_button_pin{
+    bsp_button_1=0,
+    bsp_button_2,
+    bsp_button_3,
+    bsp_button_4
+}BSP_BUTTON;
 
 static uint8_t button_flag=0;
-key_status long_press_state[5];
-static uint32_t long_press_chk_tick[5];
-uint32_t led_state[5];
+key_status long_press_state[4];
+static uint32_t long_press_chk_tick[4];
+uint32_t led_state[4];
 
-
-
-static uint32_t pin_to_num(int button_pin)
-{
-    if(button_pin == 11) {return 1;}
-    else if(button_pin == 12) {return 2;}
-    else if(button_pin == 24) {return 3;}
-    else if(button_pin == 25) {return 4;}
-}
 
 static void button_flag_clear(int pin_no);
 static void button_flag_set(int pin_no)
 {
     button_flag_clear(pin_no);
-    if(pin_no==1)
+    if(pin_no==0)
     {
         button_flag |= (1<<0);
     }
-    else if(pin_no==2)
+    else if(pin_no==1)
     {
         button_flag |= (1<<1);        
     }
-    else if(pin_no==3)
+    else if(pin_no==2)
     {
         button_flag |= (1<<2);   
     }
-    else if(pin_no==4)
+    else if(pin_no==3)
     {
         button_flag |= (1<<3);        
     }
@@ -634,24 +616,24 @@ static void button_flag_set(int pin_no)
 
 static int button_flag_get(int pin_no)
 {
-    return (button_flag & (1<<(pin_no-1)));
+    return (button_flag & (1<<(pin_no)));
 }
 
 static void button_flag_clear(int pin_no)
 {
-    if(pin_no==1)
+    if(pin_no==0)
     {
         button_flag &= ~(1<<0);
     }
-    else if(pin_no==2)
+    else if(pin_no==1)
     {
         button_flag &= ~(1<<1);    
     }
-    else if(pin_no==3)
+    else if(pin_no==2)
     {
         button_flag &= ~(1<<2);
     }
-    else if(pin_no==4)
+    else if(pin_no==3)
     {
         button_flag &= ~(1<<3);      
     }
@@ -659,38 +641,38 @@ static void button_flag_clear(int pin_no)
 
 static uint32_t button_led_control_clear(void)
 {
-    bsp_board_led_off(BSP_LED_0);
-    bsp_board_led_off(BSP_LED_1);
-    bsp_board_led_off(BSP_LED_2);
-    bsp_board_led_off(BSP_LED_3);
+    bsp_board_led_off(bsp_led_1);
+    bsp_board_led_off(bsp_led_2);
+    bsp_board_led_off(bsp_led_3);
+    bsp_board_led_off(bsp_led_4);
 
 }
 
 static uint32_t button_led_control(uint32_t button_pin, uint32_t led_pin) {
-    if(long_press_state[pin_to_num(button_pin)]==key_press)
+    if(long_press_state[button_pin]==key_press)
     {
-        //NRF_LOG_INFO("%d",led_state[pin_to_num(button_pin)]);
-        if (led_state[pin_to_num(button_pin)]==led_on)
+
+        if (led_state[button_pin]==led_on)
         {
-            led_state[pin_to_num(button_pin)]=led_on; 
+            led_state[button_pin]=led_on; 
             bsp_board_led_on(led_pin);
         }
-        else if(led_state[pin_to_num(button_pin)]==led_off)
+        else if(led_state[button_pin]==led_off)
         {
-            led_state[pin_to_num(button_pin)]=led_on; 
+            led_state[button_pin]=led_on; 
             bsp_board_led_on(led_pin);
         }
     }
-    else if(long_press_state[pin_to_num(button_pin)]==key_long_press)
+    else if(long_press_state[button_pin]==key_long_press)
     {
-        if (led_state[pin_to_num(button_pin)]==led_on)
+        if (led_state[button_pin]==led_on)
         {
-            led_state[pin_to_num(button_pin)]=led_off;
+            led_state[button_pin]=led_off;
             bsp_board_led_on(led_pin);       
         }
-        else if (led_state[pin_to_num(button_pin)]==led_off)
+        else if (led_state[button_pin]==led_off)
         {
-            led_state[pin_to_num(button_pin)]=led_on;
+            led_state[button_pin]=led_on;
             bsp_board_led_off(led_pin);     
         }
     }
@@ -700,52 +682,43 @@ static uint32_t button_led_control(uint32_t button_pin, uint32_t led_pin) {
     }
 }
 
-static void check_button_state(uint32_t button_index);
-
 void bsp_evt_handler(bsp_event_t event)
 {
     uint32_t err_code;
     switch (event)
     {
         case BSP_EVENT_KEY_0:
-            long_press_chk_tick[1]=0;
-            button_flag_set(1);
+            button_flag_set(0);
             err_code = app_timer_start(bsp_long_press_id,APP_TIMER_TICKS(100),NULL);
             APP_ERROR_CHECK(err_code);
             break;
         case BSP_EVENT_KEY_1:
-            button_flag_set(2);
+            button_flag_set(1);
             err_code = app_timer_start(bsp_long_press_id,APP_TIMER_TICKS(100),NULL);
             APP_ERROR_CHECK(err_code);
             break;       
         case BSP_EVENT_KEY_2:
-            button_flag_set(3);
+            button_flag_set(2);
             err_code = app_timer_start(bsp_long_press_id,APP_TIMER_TICKS(100),NULL);
             APP_ERROR_CHECK(err_code);
             break; 
         case BSP_EVENT_KEY_3:
-            button_flag_set(4);
+            button_flag_set(3);
             err_code = app_timer_start(bsp_long_press_id,APP_TIMER_TICKS(100),NULL);
             APP_ERROR_CHECK(err_code);
             break;
-        default:
+        case BSP_EVENT_SLEEP:
+            sleep_mode_enter();
             break;
     }
+    
 
 }
 
-static int num_to_pin(int num)
-{
-    if (num == 1) { return 11; }
-    else if(num == 2) { return 12; }
-    else if(num == 3) { return 24; }
-    else if(num == 4) { return 25;}
-
-}
 
 static void check_button_state(uint32_t button_index)
 {
-    if(button_flag_get(button_index) && bsp_button_is_pressed(button_index-1)==1)
+    if(button_flag_get(button_index) && bsp_button_is_pressed(button_index)==1)
     {
         long_press_state[button_index] = key_press;
         long_press_chk_tick[button_index]++;
@@ -766,25 +739,24 @@ static void bsp_long_press_handler(void* p_context)
 
     if(button_flag)
     {
-        for(int i=1;i<=4;i++)
+        for(int i=0;i<4;i++)
         {
             check_button_state(i);
         }
     }
     else
     {
-        for(int i=1;i<=4;i++)
+        for(int i=0;i<4;i++)
         {
             long_press_state[i]=key_release;
             long_press_chk_tick[i]=0;
         }
         button_led_control_clear(); 
     }
-
-    button_led_control(BUTTON_1,0);
-    button_led_control(BUTTON_2,1);
-    button_led_control(BUTTON_3,2);
-    button_led_control(BUTTON_4,3);
+    button_led_control(bsp_button_1,bsp_led_1);
+    button_led_control(bsp_button_2,bsp_led_2);
+    button_led_control(bsp_button_3,bsp_led_3);
+    button_led_control(bsp_button_4,bsp_led_4);
 
     uint8_t button_data=button_flag;
     uint16_t length = sizeof(button_data);
@@ -903,7 +875,7 @@ static void advertising_init(void)
     memset(&init, 0, sizeof(init));
 
     ble_advdata_manuf_data_t manuf_specific_data;
-    //ble_uuid_t adv_uuids[] = {{LBS_UUID_SERVICE, m_lbs.uuid_type}};
+
 
     manuf_specific_data.company_identifier = APP_COMPANY_IDENTIFIER;
 

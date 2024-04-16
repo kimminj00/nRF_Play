@@ -80,7 +80,6 @@ Output/Release/Obj/ble_app_uart_pca10056_s140/main.o: \
  ../../../../../../components/libraries/util/app_util_platform.h \
  ../../../../../../components/softdevice/s140/headers/nrf_nvic.h \
  ../../../../../../components/libraries/util/app_error.h \
- ../../../../../../components/ble/ble_services/ble_lbs/ble_lbs.h \
  ../../../../../../components/libraries/bsp/bsp_btn_ble.h \
  ../../../../../../components/libraries/bsp/bsp.h \
  ../../../../../../components/boards/boards.h \
